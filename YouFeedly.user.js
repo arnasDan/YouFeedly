@@ -7,9 +7,12 @@
 // @match        https://www.youtube.com/*
 // @require      https://code.jquery.com/jquery-3.4.1.min.js
 // @grant        GM_addStyle
+// @run-at       document_start
 // ==/UserScript==
 
 var $ = window.jQuery;
+
+const subscribeSelector = '#meta-contents #subscribe-button';
 
 GM_addStyle(`
             .feedly-button {
@@ -40,23 +43,37 @@ GM_addStyle(`
 
 var addButton = () => {
     if (!$('.feedly-button').length) {
-        var subscribeButton = $('#meta #subscribe-button');
-        //assume identical subscription status in feedly as in YouTube.
-        var attr = subscribeButton.find('paper-button').attr('subscribed') == '' ? 'subscribed=""' : '';
-        var searchTerm = 'youtube.com' + encodeURIComponent($('#owner-name a').attr('href'));
-        var baseUrl = 'https://feedly.com/i/discover/sources/search/feed/';
-        var feedlyButton = subscribeButton.before(`<a class="feedly-button" target="_blank" ${attr} href="${baseUrl + searchTerm}">Feedly</a>`);
-        feedlyButton.on('click', () => {
-            window.open(baseUrl + searchTerm, '_blank');
-        });
+        var subscribeButton = $(subscribeSelector);
+        subscribeButton.before('<a class="feedly-button" target="_blank" href="#" >Feedly</a>');
     }
 };
 
-window.addEventListener('yt-navigate-start', () => {
+var updateButton = () => {
+    var feedlyButton = $('.feedly-button');
+    //assume identical subscription status in feedly as in YouTube.
+    var subscribed = $(subscribeSelector).find('paper-button').attr('subscribed') === '';
+    if (subscribed) {
+        feedlyButton.attr('subscribed', '');
+    }
+    else {
+        feedlyButton.removeAttr('subscribed');
+    }
+
+    var searchTerm = 'youtube.com' + encodeURIComponent($('#owner-name a').attr('href'));
+    var baseUrl = 'https://feedly.com/i/discover/sources/search/feed/';
+
+    feedlyButton.attr('href', baseUrl + searchTerm);
+
+};
+
+window.addEventListener('yt-navigate-finish', () => {
+        console.log('run');
         addButton();
+        updateButton();
     });
 
 //fallback for reloaded page, very ugly, but can't be bothered atm
 setTimeout(function() {
         addButton();
+        updateButton();
     }, 4000);
