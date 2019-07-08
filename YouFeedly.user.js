@@ -30,6 +30,7 @@ GM_addStyle(`
                 border: none;
                 font-family: var(--paper-font-common-base_-_font-family);
                 cursor: pointer;
+                text-decoration: none;
             }
             .feedly-button[subscribed] {
                 background-color: var(--yt-spec-10-percent-layer);
@@ -37,16 +38,21 @@ GM_addStyle(`
             }
             `);
 
-var addButton = function() {
+var addButton = () => {
     if (!$('.feedly-button').length) {
         var subscribeButton = $('#meta #subscribe-button');
         //assume identical subscription status in feedly as in YouTube.
         var attr = subscribeButton.find('paper-button').attr('subscribed') == '' ? 'subscribed=""' : '';
-        var feedlyButton = subscribeButton.before(`<button class="feedly-button" ${attr}>Feedly</button>`);
+        var searchTerm = 'youtube.com' + encodeURIComponent($('#owner-name a').attr('href'));
+        var baseUrl = 'https://feedly.com/i/discover/sources/search/feed/';
+        var feedlyButton = subscribeButton.before(`<a class="feedly-button" target="_blank" ${attr} href="${baseUrl + searchTerm}">Feedly</a>`);
+        feedlyButton.on('click', () => {
+            window.open(baseUrl + searchTerm, '_blank');
+        });
     }
 };
 
-window.addEventListener('yt-navigate-start', function() {
+window.addEventListener('yt-navigate-start', () => {
         addButton();
     });
 
