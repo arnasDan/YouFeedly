@@ -42,10 +42,8 @@ GM_addStyle(`
             `);
 
 var addButton = () => {
-    if (!$('.feedly-button').length) {
-        var subscribeButton = $(subscribeSelector);
-        subscribeButton.before('<a class="feedly-button" target="_blank" href="#" >Feedly</a>');
-    }
+    var subscribeButton = $(subscribeSelector);
+    subscribeButton.before('<a class="feedly-button" target="_blank" href="#" >Feedly</a>');
 };
 
 var updateButton = () => {
@@ -66,14 +64,11 @@ var updateButton = () => {
 
 };
 
-window.addEventListener('yt-navigate-finish', () => {
-        console.log('run');
-        addButton();
-        updateButton();
+$(document).on('yt-page-data-updated', 'body', () => {
+        setTimeout(() => {
+            if (!$('.feedly-button').length) {
+                addButton();
+            }
+            updateButton();
+        }, 50);
     });
-
-//fallback for reloaded page, very ugly, but can't be bothered atm
-setTimeout(function() {
-        addButton();
-        updateButton();
-    }, 4000);
